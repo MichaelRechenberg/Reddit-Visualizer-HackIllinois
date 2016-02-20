@@ -1,4 +1,8 @@
-# Reddit visualizer for HackIllinois 2016
+# Reddit comment for HackIllinois 2016
+#
+# Searches through a subreddit's front-page threads and
+#   prints out how many times the keyword was found a comment
+# The searches are case insensitive
 #
 # Author: Michael Rechenberg
 
@@ -16,12 +20,29 @@ def index():
 #http://stackoverflow.com/questions/23066488/json-passed-from-python-flask-into-javascript-is-displaying-on-screen
 @app.route('/ajax')
 def ajax():
-    #extract arguments from query string
-    keyword = request.args.get('keyword')
-    subreddit = request.args.get('subreddit')
-    return jsonify(redditCode(keyword, subreddit))
 
-def redditCode(inputKeyword, inputSubreddit):
+    #array to hold all of the keywords we want to use
+    keywords = []
+    #extract arguments from query string
+    keywordCount = int(request.args.get('keywordCount'))
+    for x in xrange(keywordCount):
+        str = "keyword{0}".format(x)
+        keyword = request.args.get(str)
+        keywords.append(keyword)
+
+    subreddit = request.args.get('subreddit')
+
+    #send the work to the scraper
+    result = redditCode(keywords, subreddit)
+    #the user entered an invalid subreddit
+    if result==None:
+        return "InvalidSubreddit"
+    return jsonify(result)
+
+
+#inputKeywords: array of keywords we want to search
+#inputSubreddit: subreddit we want to search
+def redditCode(inputKeywords, inputSubreddit):
     print "Starting\n"
 
     user_agent = "HackIllinois 2016 Reddit Scraper u/MikeandOrIke"
@@ -41,11 +62,12 @@ def redditCode(inputKeyword, inputSubreddit):
         url = "https://www.reddit.com/r/{0}/.json".format(str(subreddit))
         try:
             response = r.request(url, retry_on_error=False)
-            print "Good choice!"
             print "Searching the subreddit {0}.".format(subreddit)
             break
+        #Handle incorrect subreddits
         except (praw.errors.InvalidSubreddit):
             print "Invalid subreddit, try again"
+            return None
 
     #dictionary holding our json
     data = response.json()
@@ -77,10 +99,10 @@ def redditCode(inputKeyword, inputSubreddit):
     print "Done Gathering Comments"
     #Dictionary to contain how many times the word was found
     result = {}
-    print "Finding keyword in comments"
-    for x in xrange(1):
+
+    for keyword in inputKeywords:
+        print "Searching for {0}.".format(keyword)
         #keyword = raw_input("Enter the word you want to search for (Case Insensitive)\n")
-        keyword = inputKeyword
         #count how many a word was found in the comments
         #only counts one word per comment to prevent spammers from
         #   skewing results

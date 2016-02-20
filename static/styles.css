@@ -1,7 +1,11 @@
 h1{
-    background-color: red
+    background-color: red;
+    margin: auto;
+    text-align: center;
+    background-color: #e6e6ff;
 }
 
 #visualizer{
-    background-color: blue
+    background-color: #80dfff;
+    font-size: 2em;
 }
