@@ -4,10 +4,10 @@
 
 import praw
 import re
-from flask import Flask, jsonify, Response, render_template
+from flask import Flask, jsonify, request, render_template
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 @app.route('/')
 def index():
@@ -16,9 +16,12 @@ def index():
 #http://stackoverflow.com/questions/23066488/json-passed-from-python-flask-into-javascript-is-displaying-on-screen
 @app.route('/ajax')
 def ajax():
-    return Response(jsonify(redditCode()), mimetype='application/json')
+    #extract arguments from query string
+    keyword = request.args.get('keyword')
+    subreddit = request.args.get('subreddit')
+    return jsonify(redditCode(keyword, subreddit))
 
-def redditCode():
+def redditCode(inputKeyword, inputSubreddit):
     print "Starting\n"
 
     user_agent = "HackIllinois 2016 Reddit Scraper u/MikeandOrIke"
@@ -28,15 +31,18 @@ def redditCode():
 
 
     #Get the ID's of the subreddit's front page
+
     #Variable to hold the HTTP response
     response = None
     url = ""
     while True:
-        subreddit = raw_input("What subreddit would you like to search?\n")
+        #subreddit = raw_input("What subreddit would you like to search?\n")
+        subreddit = inputSubreddit
         url = "https://www.reddit.com/r/{0}/.json".format(str(subreddit))
         try:
             response = r.request(url, retry_on_error=False)
             print "Good choice!"
+            print "Searching the subreddit {0}.".format(subreddit)
             break
         except (praw.errors.InvalidSubreddit):
             print "Invalid subreddit, try again"
@@ -68,26 +74,29 @@ def redditCode():
         for x in comments:
             commentList.append(x.body)
 
+    print "Done Gathering Comments"
+    #Dictionary to contain how many times the word was found
+    result = {}
+    print "Finding keyword in comments"
+    for x in xrange(1):
+        #keyword = raw_input("Enter the word you want to search for (Case Insensitive)\n")
+        keyword = inputKeyword
+        #count how many a word was found in the comments
+        #only counts one word per comment to prevent spammers from
+        #   skewing results
+        #use re's findall if I want to count multiple words
+        wordCount = 0
 
-    keyword = raw_input("Enter the word you want to search for (Case Insensitive)\n")
+        for comment in commentList:
+            comment = comment.lower()
+            if re.search(r"\b{0}\b".format(keyword), comment) != None:
+                wordCount += 1
 
-    #count how many a word was found in the comments
-    #only counts one word per comment to prevent spammers from
-    #   skewing results
-    #use re's findall if I want to count multiple words
-    wordCount = 0
+        result[keyword] = wordCount
 
-    for comment in commentList:
-        comment = comment.lower()
-        if re.search(r"\b{0}\b".format(keyword), comment) != None:
-            print comment
-            wordCount += 1
-
-    print wordCount
     print "Finished!"
 
-    result = {}
-    result[keyword] = wordCount
+
     print result
     return result
 

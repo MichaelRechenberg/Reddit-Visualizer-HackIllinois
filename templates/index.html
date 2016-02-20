@@ -1,16 +1,21 @@
 <!doctype html>
 <html>
+
 <head>
+    <link rel="shortcut icon" href = "{{ url_for('static', filename='img/favicon.ico') }}">
 	<title>Reddit Visualizer HI 2016</title>
-    {% assets "jQuery-2.2.0.js" %}
-    <script type="text/javascript" src="jQuery-2.2.0.js"></script>
-    {% endassets %}
-    {% assets "vis.js" %}
-    <script src="vis.js"></script>
-    {% endassets %}
+    <script type="text/javascript">
+
+    </script>
+    <link rel="stylesheet" href = "/static/styles.css">
+    <script type="text/javascript" src="/static/jquery.js"></script>
+    <script src="/static/vis.js"></script>
 </head>
 
 <body>
 	<h1>Welcome to my page!</h1>
+    <!--Keyword: <input type="text" value="Enter a word"> !-->
+    <div id="keywordInput"></div>
+    <div id="visualizer">PLACE AWESOME CODE HERE</div>
 </body>
 </html>
