@@ -5,6 +5,7 @@
 import praw
 import re
 
+
 print "Starting\n"
 
 user_agent = "HackIllinois 2016 Reddit Scraper u/MikeandOrIke"
@@ -17,10 +18,21 @@ randomSub = r.get_random_subreddit(nsfw=False)
 print randomSub
 
 #Get the ID's of the subreddit's front page
-url = "https://www.reddit.com/r/{0}/.json".format(str(randomSub))
-derp = r.request(url)
+#Variable to hold the HTTP response
+response = None
+url = ""
+while True:
+    subreddit = raw_input("What subreddit would you like to search?\n")
+    url = "https://www.reddit.com/r/{0}/.json".format(str(subreddit))
+    try:
+        response = r.request(url, retry_on_error=False)
+        print "Good choice!"
+        break
+    except (praw.errors.InvalidSubreddit):
+        print "Invalid subreddit, try again"
+
 #dictionary holding our json
-data = derp.json()
+data = response.json()
 
 #Add all the thread id's of the front page of the
 # subreddit to idArr
@@ -32,6 +44,7 @@ for x in data['data']['children']:
 # html = urllib2.urlopen(req).read()
 # print html
 
+print "Gathering Comments"
 commentList = []
 
 for subID in idArr:
@@ -48,7 +61,7 @@ for subID in idArr:
 
 keyword = raw_input("Enter the word you want to search for (Case Insensitive)\n")
 
-#count how many times the word was found in the comments
+#count how many a word was found in the comments
 #only counts one word per comment to prevent spammers from
 #   skewing results
 #use re's findall if I want to count multiple words
