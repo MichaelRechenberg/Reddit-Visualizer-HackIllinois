@@ -9,6 +9,8 @@
 import praw
 import re
 from flask import Flask, jsonify, request, render_template
+from bs4 import BeautifulSoup
+import urllib2
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -30,10 +32,15 @@ def ajax():
         keyword = request.args.get(str)
         keywords.append(keyword)
 
-    subreddit = request.args.get('subreddit')
+    subreddits = []
+    subredditCount = int(request.args.get('subredditCount'))
+    for x in xrange(subredditCount):
+        str = "subreddit{0}".format(x)
+        subreddit = request.args.get(str)
+        subreddits.append(subreddit)
 
     #send the work to the scraper
-    result = redditCode(keywords, subreddit)
+    result = redditCode(keywords, subreddits)
     #the user entered an invalid subreddit
     if result==None:
         return "InvalidSubreddit"
@@ -42,7 +49,7 @@ def ajax():
 
 #inputKeywords: array of keywords we want to search
 #inputSubreddit: subreddit we want to search
-def redditCode(inputKeywords, inputSubreddit):
+def redditCode(inputKeywords, inputSubreddits):
     print "Starting\n"
 
     user_agent = "HackIllinois 2016 Reddit Scraper u/MikeandOrIke"
@@ -56,65 +63,65 @@ def redditCode(inputKeywords, inputSubreddit):
     #Variable to hold the HTTP response
     response = None
     url = ""
-    while True:
-        #subreddit = raw_input("What subreddit would you like to search?\n")
-        subreddit = inputSubreddit
+
+
+
+
+    #Dictionary to contain how many times the word was found
+    result = {}
+    for keyword in inputKeywords:
+        result[keyword] = 0
+
+    #For every subreddit we want to search
+    for subreddit in inputSubreddits:
+
         url = "https://www.reddit.com/r/{0}/.json".format(str(subreddit))
         try:
             response = r.request(url, retry_on_error=False)
             print "Searching the subreddit {0}.".format(subreddit)
-            break
         #Handle incorrect subreddits
         except (praw.errors.InvalidSubreddit):
             print "Invalid subreddit, try again"
             return None
 
-    #dictionary holding our json
-    data = response.json()
+        #dictionary holding our json
+        data = response.json()
 
-    #Add all the thread id's of the front page of the
-    # subreddit to idArr
-    idArr = []
-    for x in data['data']['children']:
-        idArr.append(x['data']['id'])
+        #Add all the thread id's of the front page of the
+        # subreddit to idArr
+        idArr = []
+        for x in data['data']['children']:
+            idArr.append(x['data']['id'])
 
-    # req = urllib2.Request(url, headers={'User-Agent': user_agent})
-    # html = urllib2.urlopen(req).read()
-    # print html
+        print "Gathering Comments"
+        commentList = []
 
-    print "Gathering Comments"
-    commentList = []
+        for subID in idArr:
+            #access the submission with the given submission ID
+            submission = r.get_submission(submission_id=subID)
+            #expand MoreCommentObjects
+            submission.replace_more_comments(limit=None, threshold=0)
+            #make it an unordered list instead of a tree
+            comments = praw.helpers.flatten_tree(submission.comments)
 
-    for subID in idArr:
-        #access the submission with the given submission ID
-        submission = r.get_submission(submission_id=subID)
-        #expand MoreCommentObjects
-        submission.replace_more_comments(limit=None, threshold=0)
-        #make it an unordered list instead of a tree
-        comments = praw.helpers.flatten_tree(submission.comments)
+            for x in comments:
+                commentList.append(x.body)
 
-        for x in comments:
-            commentList.append(x.body)
+        print "Done Gathering Comments"
+         #for every keyword
+        for keyword in inputKeywords:
+            print "Searching for {0}.".format(keyword)
+            wordCount = 0
+            #count how many a word was found in the comments
+            #only counts one word per comment to prevent spammers from
+            #   skewing results
+            #use re's findall if I want to count multiple words
 
-    print "Done Gathering Comments"
-    #Dictionary to contain how many times the word was found
-    result = {}
-
-    for keyword in inputKeywords:
-        print "Searching for {0}.".format(keyword)
-        #keyword = raw_input("Enter the word you want to search for (Case Insensitive)\n")
-        #count how many a word was found in the comments
-        #only counts one word per comment to prevent spammers from
-        #   skewing results
-        #use re's findall if I want to count multiple words
-        wordCount = 0
-
-        for comment in commentList:
-            comment = comment.lower()
-            if re.search(r"\b{0}\b".format(keyword), comment) != None:
-                wordCount += 1
-
-        result[keyword] = wordCount
+            for comment in commentList:
+                comment = comment.lower()
+                if re.search(r"\b{0}\b".format(keyword), comment) != None:
+                    wordCount += 1
+            result[keyword] += wordCount
 
     print "Finished!"
 

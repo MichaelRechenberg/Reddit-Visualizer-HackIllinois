@@ -22,13 +22,22 @@ function search(){
         }
     }
     query.push({name:"keywordCount", value:keywords.length});
-    var subreddit = document.getElementById("subreddit").value;
-    query.push({name:"subreddit", value: subreddit});
+    var subreddits = document.getElementById("subreddit").value;
+    subreddits = subreddits.split(",");
+    console.log(subreddits);
+    derp = 0;
+    for(k in subreddits){
+        if(subreddits.hasOwnProperty(k)){
+            query.push({name: "subreddit" + derp, value: subreddits[k]});
+            derp++;
+        }
+    }
+    query.push({name:"subredditCount", value:subreddits.length});
+
     console.log(query);
     console.log($.param(query));
 
-    var surl = '/ajax?keyword=' + keywords + '&subreddit=' + subreddit;
-    surl = '/ajax'
+
     //make an ajax request main.py to start scraping
     //the params sent are:
     //  keywordX : var arg number of keywords
@@ -36,7 +45,7 @@ function search(){
     //  subreddit : the subreddit we want to search
     $.ajax({
        type: 'GET',
-        url: surl,
+        url: '/ajax',
         data: $.param(query),
         success: function(data){
             //the subreddit was invalid, alert the user
@@ -65,8 +74,19 @@ function vis(){
 
         }
     }
+    words = []
+    for(k in results){
+        if(results.hasOwnProperty(k)){
+            str = "";
+            numOfWords = results[k];
+            for(x = 0; x < numOfWords; x++){
+                str+= (k + ' ');
+            }
+            words.push(str);
 
+        }
+    }
+    console.log(words);
 
 }
-
 
