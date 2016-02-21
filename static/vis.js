@@ -1,5 +1,7 @@
 console.log("Entering vis code");
 //holds the results of the search (JSON)
+//each entry has the form
+//  keyword : number_of_times_found
 var results = null;
 
 //main vis code goes in here, run when the
@@ -10,6 +12,8 @@ function search(){
 
     //construct our JSON
     var keywords = document.getElementById("keyword").value
+    //remove whitespace
+    keywords = keywords.replace(/\s/g, '');
     keywords = keywords.split(",");
     query = {
         'keywords': [],
@@ -23,6 +27,8 @@ function search(){
         }
     }
     var subreddits = document.getElementById("subreddit").value;
+    //remove whitespace
+    subreddits = subreddits.replace(/\s/g, '');
     subreddits = subreddits.split(",");
     derp = 0;
     for(k in subreddits){
@@ -31,8 +37,6 @@ function search(){
             derp++;
         }
     }
-    console.log(query);
-    console.log(JSON.stringify(query));
     //make an ajax request main.py to start scraping
     $.ajax({
        type: 'POST',
@@ -63,6 +67,7 @@ function search(){
 }
 
 function vis(){
+    $("#visualizer").html("");
     for(k in results){
         if(results.hasOwnProperty(k)){
             var str = k + " was found " + results[k] + " time(s).";
@@ -70,19 +75,9 @@ function vis(){
 
         }
     }
-    words = []
-    for(k in results){
-        if(results.hasOwnProperty(k)){
-            str = "";
-            numOfWords = results[k];
-            for(x = 0; x < numOfWords; x++){
-                str+= (k + ' ');
-            }
-            words.push(str);
 
-        }
-    }
-    console.log(words);
+
+
 
 }
 

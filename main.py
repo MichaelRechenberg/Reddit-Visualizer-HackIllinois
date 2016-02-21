@@ -9,7 +9,6 @@
 import praw
 import re
 from flask import Flask, jsonify, request, render_template
-import json
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -24,10 +23,9 @@ def ajax():
     data = request.json
     #contains the Array of keywords
     keywords = data['keywords']
-    print len(keywords)
     #contains the Array of subreddits
     subreddits = data['subreddits']
-    print len(subreddits)
+
     #send the work to the scraper
     result = redditCode(keywords, subreddits)
     #the user entered an invalid subreddit
@@ -113,9 +111,6 @@ def redditCode(inputKeywords, inputSubreddits):
             result[keyword] += wordCount
 
     print "Finished!"
-
-
-    print result
     return result
 
 

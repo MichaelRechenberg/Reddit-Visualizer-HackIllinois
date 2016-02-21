@@ -2,8 +2,10 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
     <link rel="shortcut icon" href = "{{ url_for('static', filename='img/favicon.ico') }}">
 	<title>Reddit Visualizer HI 2016</title>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="/static/styles.css">
     <script type="text/javascript" src="/static/jquery.js"></script>
     <script src="/static/vis.js"></script>
@@ -11,14 +13,13 @@
 
 <body>
 	<h1>Welcome to my Reddit Comment Parser!</h1>
-    <p>Using PRAW (Python Reddit API Wrapper), search for words in comments from the front page of a subreddit.</p>
-    <p>Enter a comma seperated list of the words you want to search for and a subreddit you want to search the comments of. Words are case insensitive. Do not include spaces between words. Hit submit to make your search.</p>
+    <p>Using PRAW (Python Reddit API Wrapper), search for words in comments from the front page of any amount of subredits.</p>
+    <p>Enter a comma seperated list of the words that you want to search for and the subreddits that you want to search in. Words are case insensitive. You can include spaces after commas, but no other whitespace (i.e. tabs). Hit submit to make your search.</p>
     <p>Note: Larger subreddits will take longer to parse because the Reddit API limits the amount of requests to 1 every 2 seconds</p>
-    Keyword: <input id="keyword" type="text" value="HackIllinois"><br>
-    Subreddit: <input id="subreddit" type="text" value="all"><br>
+    Keywords: <input id="keyword" type="text" value="HackIllinois"><br>
+    Subreddits: <input id="subreddit" type="text" value="all"><br>
     <button onclick="search()">Submit</button>
-    <div id="keywordInput"></div>
     <div id="visualizer"></div>
-    <div id="d3stuff"></div>
+    <svg id="d3div"></svg>
 </body>
 </html>
