@@ -9,8 +9,7 @@
 import praw
 import re
 from flask import Flask, jsonify, request, render_template
-from bs4 import BeautifulSoup
-import urllib2
+import json
 
 
 app = Flask(__name__, static_url_path='/static')
@@ -20,25 +19,15 @@ def index():
     return render_template('index.html')
 
 #http://stackoverflow.com/questions/23066488/json-passed-from-python-flask-into-javascript-is-displaying-on-screen
-@app.route('/ajax')
+@app.route('/ajax', methods=['POST'])
 def ajax():
-
-    #array to hold all of the keywords we want to use
-    keywords = []
-    #extract arguments from query string
-    keywordCount = int(request.args.get('keywordCount'))
-    for x in xrange(keywordCount):
-        str = "keyword{0}".format(x)
-        keyword = request.args.get(str)
-        keywords.append(keyword)
-
-    subreddits = []
-    subredditCount = int(request.args.get('subredditCount'))
-    for x in xrange(subredditCount):
-        str = "subreddit{0}".format(x)
-        subreddit = request.args.get(str)
-        subreddits.append(subreddit)
-
+    data = request.json
+    #contains the Array of keywords
+    keywords = data['keywords']
+    print len(keywords)
+    #contains the Array of subreddits
+    subreddits = data['subreddits']
+    print len(subreddits)
     #send the work to the scraper
     result = redditCode(keywords, subreddits)
     #the user entered an invalid subreddit

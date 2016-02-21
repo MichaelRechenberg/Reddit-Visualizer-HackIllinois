@@ -8,45 +8,38 @@ var results = null;
 //  after the success of the call
 function search(){
 
-    //construct our query
+    //construct our JSON
     var keywords = document.getElementById("keyword").value
     keywords = keywords.split(",");
-    console.log(keywords);
-    //array containing our resulting query
-    query = []
+    query = {
+        'keywords': [],
+        'subreddits': []
+    };
     var derp = 0;
     for(k in keywords){
         if(keywords.hasOwnProperty(k)){
-            query.push({name: "keyword" + derp, value: keywords[k]});
+            query['keywords'].push(keywords[k]);
             derp++;
         }
     }
-    query.push({name:"keywordCount", value:keywords.length});
     var subreddits = document.getElementById("subreddit").value;
     subreddits = subreddits.split(",");
-    console.log(subreddits);
     derp = 0;
     for(k in subreddits){
         if(subreddits.hasOwnProperty(k)){
-            query.push({name: "subreddit" + derp, value: subreddits[k]});
+            query['subreddits'].push(subreddits[k]);
             derp++;
         }
     }
-    query.push({name:"subredditCount", value:subreddits.length});
-
     console.log(query);
-    console.log($.param(query));
-
-
+    console.log(JSON.stringify(query));
     //make an ajax request main.py to start scraping
-    //the params sent are:
-    //  keywordX : var arg number of keywords
-    //  keywordCount : amount of keywords sent
-    //  subreddit : the subreddit we want to search
     $.ajax({
-       type: 'GET',
+       type: 'POST',
         url: '/ajax',
-        data: $.param(query),
+        data: JSON.stringify(query),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
         success: function(data){
             //the subreddit was invalid, alert the user
             if(data=="InvalidSubreddit"){
@@ -59,6 +52,9 @@ function search(){
                 vis(data);
             }
 
+        },
+        error: function(data){
+            alert("Error");
         }
 
         //complete: function() {console.log(results)}
